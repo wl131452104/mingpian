@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth dark"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WANG LI • PORTFOLIO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 引入高级字体 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0a0a0a',
+                        light: '#ffffff',
+                        accent: '#6366f1', /* Indigo */
+                        surface: '#171717',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 1. 全局噪点纹理背景 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.4;
+        }
+
+        /* 2. 动态光晕背景 */
+        .ambient-light {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            background: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+            z-index: -1;
+            filter: blur(60px);
+            animation: pulseLight 10s infinite alternate;
+        }
+
+        @keyframes pulseLight {
+            0% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+        }
+
+        /* 3. 高级毛玻璃效果 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-panel {
+            background: rgba(23, 23, 23, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* 4. 文字流光动画 */
+        .text-shimmer {
+            background: linear-gradient(
+                to right,
+                #6366f1 20%,
+                #a855f7 40%,
+                #ec4899 60%,
+                #6366f1 80%
+            );
+            background-size: 200% auto;
+            color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: shimmer 5s linear infinite;
+        }
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        /* 5. 卡片悬停微交互 */
+        .bento-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .bento-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15);
+        }
+        .dark .bento-card:hover {
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        /* 视频容器样式 */
+        .video-container {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 编辑模式样式 */
+        [contenteditable="true"] {
+            outline: 2px dashed #6366f1;
+            outline-offset: 4px;
+            border-radius: 4px;
+            cursor: text;
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid #6366f1;
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        /* 管理员模式：媒体编辑遮罩 */
+        .admin-media-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 50;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.2s;
+            opacity: 0.8;
+        }
+        .admin-media-overlay:hover {
+            background: #6366f1;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* 滚动条隐藏但可滚动 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.-bottom-6{bottom:-1.5rem}.-left-6{left:-1.5rem}.bottom-0{bottom:0px}.bottom-10{bottom:2.5rem}.left-0{left:0px}.left-1\/2{left:50%}.right-0{right:0px}.top-0{top:0px}.top-6{top:1.5rem}.z-10{z-index:10}.z-50{z-index:50}.z-\[100\]{z-index:100}.mx-2{margin-left:0.5rem;margin-right:0.5rem}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-12{margin-bottom:3rem}.mb-16{margin-bottom:4rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-8{margin-bottom:2rem}.mr-2{margin-right:0.5rem}.mt-20{margin-top:5rem}.mt-24{margin-top:6rem}.mt-6{margin-top:1.5rem}.mr-1{margin-right:0.25rem}.line-clamp-2{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.aspect-\[4\/5\]{aspect-ratio:4/5}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-3{height:0.75rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-full{height:100%}.min-h-screen{min-height:100vh}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-3{width:0.75rem}.w-8{width:2rem}.w-full{width:100%}.w-px{width:1px}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-7xl{max-width:80rem}.max-w-lg{max-width:32rem}.origin-left{transform-origin:left}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-4{--tw-translate-y:1rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-full{--tw-translate-y:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-10{--tw-translate-y:2.5rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-45{--tw-rotate:-45deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.rotate-3{--tw-rotate:3deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-x-0{--tw-scale-x:0;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite}.cursor-default{cursor:default}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.auto-rows-\[400px\]{grid-auto-rows:400px}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-12{gap:3rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-8 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(2rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(2rem * var(--tw-space-y-reverse))}.self-end{align-self:flex-end}.overflow-hidden{overflow:hidden}.scroll-smooth{scroll-behavior:smooth}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-transparent{border-color:transparent}.bg-\[\#f8f9fa\]{--tw-bg-opacity:1;background-color:rgb(248 249 250 / var(--tw-bg-opacity, 1))}.bg-accent{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-200{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.bg-slate-300{--tw-bg-opacity:1;background-color:rgb(203 213 225 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-gradient-to-t{background-image:linear-gradient(to top, var(--tw-gradient-stops))}.from-black\/80{--tw-gradient-from:rgb(0 0 0 / 0.8) var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 0 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-black\/90{--tw-gradient-from:rgb(0 0 0 / 0.9) var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 0 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-black\/20{--tw-gradient-to:rgb(0 0 0 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(0 0 0 / 0.2) var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-transparent{--tw-gradient-to:rgb(0 0 0 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), transparent var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.object-cover{object-fit:cover}.p-2{padding:0.5rem}.p-4{padding:1rem}.p-8{padding:2rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-20{padding-top:5rem;padding-bottom:5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-32{padding-top:8rem;padding-bottom:8rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.pb-1{padding-bottom:0.25rem}.pt-20{padding-top:5rem}.pt-4{padding-top:1rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.font-display{font-family:Space Grotesk, sans-serif}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:Inter, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-5xl{font-size:3rem;line-height:1}.text-6xl{font-size:3.75rem;line-height:1}.text-9xl{font-size:8rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-light{font-weight:300}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-\[0\.9\]{line-height:0.9}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-tighter{letter-spacing:-0.05em}.tracking-wide{letter-spacing:0.025em}.tracking-widest{letter-spacing:0.1em}.text-accent{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94 / var(--tw-text-opacity, 1))}.text-pink-500{--tw-text-opacity:1;color:rgb(236 72 153 / var(--tw-text-opacity, 1))}.text-purple-500{--tw-text-opacity:1;color:rgb(168 85 247 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.opacity-10{opacity:0.1}.opacity-50{opacity:0.5}.opacity-60{opacity:0.6}.opacity-70{opacity:0.7}.opacity-80{opacity:0.8}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-indigo-500\/20{--tw-shadow-color:rgb(99 102 241 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-indigo-500\/30{--tw-shadow-color:rgb(99 102 241 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.grayscale{--tw-grayscale:grayscale(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.delay-100{transition-delay:100ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.duration-700{transition-duration:700ms}.duration-1000{transition-duration:1000ms}.selection\:bg-accent *::selection{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.selection\:text-white *::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.selection\:bg-accent::selection{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.selection\:text-white::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:rotate-0:hover{--tw-rotate:0deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-\[1\.02\]:hover{--tw-scale-x:1.02;--tw-scale-y:1.02;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-accent:hover{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.hover\:bg-indigo-600:hover{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:text-accent:hover{--tw-text-opacity:1;color:rgb(99 102 241 / var(--tw-text-opacity, 1))}.hover\:text-black:hover{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:grayscale-0:hover{--tw-grayscale:grayscale(0);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.group:hover .group-hover\:translate-y-0{--tw-translate-y:0px;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:rotate-0{--tw-rotate:0deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:scale-x-100{--tw-scale-x:1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:border-current{border-color:currentColor}.group:hover .group-hover\:text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:opacity-100{opacity:1}.dark\:border-slate-700:is(.dark *){--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.dark\:border-slate-800:is(.dark *){--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.dark\:border-white\/10:is(.dark *){border-color:rgb(255 255 255 / 0.1)}.dark\:bg-\[\#050505\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(5 5 5 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-700:is(.dark *){--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-800:is(.dark *){--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-900:is(.dark *){--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.dark\:bg-white:is(.dark *){--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.dark\:bg-white\/10:is(.dark *){background-color:rgb(255 255 255 / 0.1)}.dark\:bg-white\/5:is(.dark *){background-color:rgb(255 255 255 / 0.05)}.dark\:text-black:is(.dark *){--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.dark\:text-slate-200:is(.dark *){--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.dark\:text-slate-400:is(.dark *){--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.dark\:text-white:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.dark\:hover\:bg-slate-700:hover:is(.dark *){--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.dark\:hover\:bg-white\/20:hover:is(.dark *){background-color:rgb(255 255 255 / 0.2)}.dark\:hover\:text-white:hover:is(.dark *){--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.group:hover .dark\:group-hover\:text-black:is(.dark *){--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}@media (min-width: 768px){.md\:col-span-2{grid-column:span 2 / span 2}.md\:block{display:block}.md\:flex{display:flex}.md\:hidden{display:none}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:gap-8{gap:2rem}.md\:self-auto{align-self:auto}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-7xl{font-size:4.5rem;line-height:1}.md\:text-8xl{font-size:6rem;line-height:1}}@media (min-width: 1024px){.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-8{grid-column:span 8 / span 8}.lg\:block{display:block}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}}</style></head>
+<body class="bg-[#f8f9fa] text-slate-900 dark:bg-[#050505] dark:text-slate-200 transition-colors duration-500 font-sans selection:bg-accent selection:text-white">
+
+    <!-- 动态背景光 -->
+    <div class="ambient-light"></div>
+
+    <!-- 悬浮导航栏 -->
+    <div class="fixed top-6 left-0 right-0 flex justify-center z-50 px-4">
+        <nav class="glass-panel px-6 py-3 rounded-full shadow-lg flex items-center justify-between gap-8 transition-all duration-300 transform hover:scale-[1.02]">
+            <a href="#" class="font-display font-bold text-xl tracking-tighter hover:text-accent transition-colors">
+                WL<span class="text-accent">.</span>
+            </a>
+            
+            <div class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-400">
+                <a href="#work" class="hover:text-black dark:hover:text-white transition-colors">作品</a>
+                <a href="#about" class="hover:text-black dark:hover:text-white transition-colors">关于</a>
+                <a href="#contact" class="hover:text-black dark:hover:text-white transition-colors">联系</a>
+            </div>
+
+            <button id="theme-toggle" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 transition-colors">
+                <i class="fas fa-sun text-xs"></i>
+            </button>
+            
+            <button class="md:hidden text-slate-800 dark:text-white" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </nav>
+    </div>
+
+    <!-- 英雄区 -->
+    <section class="min-h-screen flex flex-col justify-center px-6 relative pt-20">
+        <div class="max-w-7xl mx-auto w-full grid lg:grid-cols-12 gap-12 items-center transition-all duration-1000">
+            <div class="lg:col-span-8 space-y-8">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-xs font-medium uppercase tracking-wide opacity-70" data-editable="">Available for Projects</span>
+                </div>
+                
+                <h1 class="font-display text-6xl md:text-8xl font-bold leading-[0.9] tracking-tight text-slate-900 dark:text-white">
+                    <span data-editable="">Visual</span> <br>
+                    <span class="italic font-light text-slate-400" data-editable="">Storytelling</span> &amp; 
+                    <span class="text-shimmer" data-editable="">AI Art</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-slate-600 dark:text-slate-400 max-w-2xl font-light leading-relaxed">
+                    你好，我是 <strong class="text-slate-900 dark:text-white font-medium" data-editable="">王利</strong>。<span data-editable="">一名具备跨媒体创作能力的数字影像创作者，擅长将传统影视技术与前沿AI工具结合。</span>
+                </p>
+
+                <div class="flex items-center gap-6 pt-4">
+                    <a href="#work" class="group relative px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-black rounded-full font-medium overflow-hidden">
+                        <span class="relative z-10 group-hover:text-white dark:group-hover:text-black transition-colors">查看作品集</span>
+                        <div class="absolute inset-0 bg-accent transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+                    </a>
+                    <a href="#contact" class="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-black dark:hover:text-white transition-colors group">
+                        <span class="border-b border-transparent group-hover:border-current transition-all">联系我</span>
+                        <i class="fas fa-arrow-right transform -rotate-45 group-hover:rotate-0 transition-transform duration-300"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 hidden lg:block relative">
+                 <div class="relative w-full aspect-[4/5] rounded-2xl overflow-hidden glass-panel p-2 rotate-3 hover:rotate-0 transition-transform duration-500 card-media-wrapper" style="position: relative;">
+                     <div class="absolute inset-0 bg-slate-100 dark:bg-slate-800"><img src="assets/蓝底.jpg" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"></div>
+                     <div class="absolute -bottom-6 -left-6 glass-panel p-4 rounded-xl flex items-center gap-4 animate-bounce" style="animation-duration: 3s;">
+                         <div class="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-white">
+                             <i class="fas fa-trophy"></i>
+                         </div>
+                         <div>
+                             <p class="text-xs opacity-60 uppercase">Awards</p>
+                             <p class="text-xl font-bold font-display" data-editable="">4+</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </div>
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 animate-bounce transition-all duration-1000">
+            <span class="text-xs uppercase tracking-widest">Scroll</span>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+    <!-- Bento Grid 作品集 -->
+    <section id="work" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto transition-all duration-1000">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+                <div>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold mb-4" data-editable="">精选作品</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-lg" data-editable="">
+                        影视全流程制作 / AI 生成式影像
+                    </p>
+                </div>
+                
+                <a href="#" class="text-sm font-medium border-b border-slate-300 dark:border-slate-700 pb-1 hover:border-accent transition-colors self-end md:self-auto">查看全部存档</a>
+            </div>
+
+            <div id="portfolio-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px]">
+                
+                <!-- 大卡片 (纪录片 - 郭杜十字) -->
+                <article class="md:col-span-2 group relative rounded-3xl overflow-hidden bento-card glass-panel cursor-pointer card-media-wrapper" style="position: relative;">
+                    <div class="video-container bg-slate-200 dark:bg-slate-800"><video autoplay="" loop="" muted="" playsinline="" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" src="assets/2022年04月15日22时24分14秒.mp4"><source src="assets/2022年04月15日22时24分14秒.mp4" type="video/mp4"></video></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent p-8 flex flex-col justify-end text-white pointer-events-none">
+                        <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <div class="flex items-center gap-2 mb-2 text-accent text-sm font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                <span data-editable="">Documentary</span> • <span data-editable="">Cinematography</span>
+                            </div>
+                            <h3 class="font-display text-3xl font-bold mb-2" data-editable="">纪录片《郭杜十字》</h3>
+                            <p class="text-slate-300 line-clamp-2 max-w-lg" data-editable="">
+                                主导拍摄工作，以独特视角展现社会问题。影片于B站获得 15万+ 播放量，引发广泛关注。
+                            </p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 竖卡片 (非遗纪录片 - 泥塑) -->
+                <article class="group relative rounded-3xl overflow-hidden bento-card glass-panel cursor-pointer card-media-wrapper" style="position: relative;">
+                    <div class="absolute inset-0 bg-slate-100 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1518998053901-5348d3969105?q=80&amp;w=1000&amp;auto=format&amp;fit=crop" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" alt="Clay Sculpture">
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-8 flex flex-col justify-end text-white pointer-events-none">
+                         <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <h3 class="font-display text-2xl font-bold mb-1" data-editable="">非遗《泥塑》</h3>
+                            <p class="text-slate-300 text-sm" data-editable="">导演 / 拍摄 / 剪辑</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 竖卡片 (剧情片 - 规则反转) -->
+                <article class="group relative rounded-3xl overflow-hidden bento-card glass-panel cursor-pointer card-media-wrapper" style="position: relative;">
+                    <div class="absolute inset-0 bg-slate-100 dark:bg-slate-800">
+                         <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&amp;w=1000&amp;auto=format&amp;fit=crop" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" alt="Short Film">
+                    </div>
+                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-8 flex flex-col justify-end text-white pointer-events-none">
+                         <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <h3 class="font-display text-2xl font-bold mb-1" data-editable="">剧情片《规则反转》</h3>
+                            <p class="text-slate-300 text-sm" data-editable="">获奖作品 / 传媒艺术节二等奖</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- 大卡片 (AI创作 & 技能) -->
+                <article class="md:col-span-2 group relative rounded-3xl overflow-hidden bento-card glass-panel cursor-pointer card-media-wrapper" style="position: relative;">
+                    <div class="video-container bg-slate-200 dark:bg-slate-800">
+                        <!-- 示例视频占位 -->
+                        <video autoplay="" loop="" muted="" playsinline="" poster="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&amp;w=2000&amp;auto=format&amp;fit=crop" class="opacity-80 group-hover:scale-105 transition-transform duration-700">
+                            <source src="https://videos.pexels.com/video-files/5829189/5829189-hd_1280_720_24fps.mp4" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex flex-col justify-end text-white pointer-events-none">
+                         <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <div class="flex items-center gap-2 mb-2 text-accent text-sm font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                <span data-editable="">Stable Diffusion</span> • <span data-editable="">Runway</span>
+                            </div>
+                            <h3 class="font-display text-3xl font-bold mb-2" data-editable="">AI 生成式影像创作</h3>
+                            <p class="text-slate-300 line-clamp-2 max-w-lg" data-editable="">擅长运用 AI 工具进行图像生成与视频制作，结合 PR/AE 后期技术，实现创意内容的高效输出。</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技能 & 关于 -->
+    <section id="about" class="py-20 px-6 bg-white/50 dark:bg-white/5">
+        <div class="max-w-4xl mx-auto text-center transition-all duration-1000">
+            <h2 class="font-display text-4xl font-bold mb-4" data-editable="">专业技能</h2>
+            <p class="text-slate-500 mb-12">西安外事学院 • 广播电视编导专业</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8">
+                <div class="px-6 py-3 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 flex items-center gap-3 hover:border-accent transition-colors cursor-default">
+                    <i class="fas fa-video text-purple-500 text-xl"></i>
+                    <span class="font-medium" data-editable="">Premiere Pro</span>
+                </div>
+                <div class="px-6 py-3 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 flex items-center gap-3 hover:border-accent transition-colors cursor-default">
+                    <i class="fas fa-wand-magic-sparkles text-blue-400 text-xl"></i>
+                    <span class="font-medium" data-editable="">After Effects</span>
+                </div>
+                <div class="px-6 py-3 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 flex items-center gap-3 hover:border-accent transition-colors cursor-default">
+                    <i class="fas fa-robot text-green-500 text-xl"></i>
+                    <span class="font-medium" data-editable="">Stable Diffusion</span>
+                </div>
+                <div class="px-6 py-3 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 flex items-center gap-3 hover:border-accent transition-colors cursor-default">
+                    <i class="fas fa-film text-pink-500 text-xl"></i>
+                    <span class="font-medium" data-editable="">Runway / Luma</span>
+                </div>
+                <div class="px-6 py-3 rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 flex items-center gap-3 hover:border-accent transition-colors cursor-default">
+                    <i class="fas fa-image text-blue-600 text-xl"></i>
+                    <span class="font-medium" data-editable="">Photoshop</span>
+                </div>
+            </div>
+
+            <div class="mt-20 p-8 glass-panel rounded-2xl text-left relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl font-display font-bold leading-none select-none pointer-events-none">"</div>
+                <h3 class="text-2xl font-bold mb-4 font-display" data-editable="">我的创作理念</h3>
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed text-lg" data-editable="">
+                    始终保持对新技术的探索热情，擅长通过技术融合提升创作效率与艺术表现力。我致力于将传统影视叙事与 AI 生成技术相结合，打造具有传播价值的创新视觉内容。
+                </p>
+                <div class="mt-6 flex items-center gap-4">
+                    <!-- 签名占位 -->
+                    <span class="font-display font-bold text-2xl opacity-60">Wang Li</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系区 -->
+    <section id="contact" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto text-center transition-all duration-1000 opacity-0 translate-y-10">
+            <h2 class="font-display text-5xl md:text-7xl font-bold mb-8 leading-tight hover:text-shimmer transition-colors cursor-default" data-editable="">
+                Let's create <br>
+                something amazing.
+            </h2>
+            <p class="text-xl text-slate-500 mb-12" data-editable="">1718996995@qq.com</p>
+            
+            <a href="mailto:1718996995@qq.com" class="inline-flex items-center gap-3 px-10 py-5 bg-accent hover:bg-indigo-600 text-white rounded-full font-bold text-lg transition-all transform hover:scale-105 shadow-xl shadow-indigo-500/20">
+                <i class="fas fa-paper-plane"></i>
+                <span>发送邮件</span>
+            </a>
+
+            <div class="mt-24 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
+                <p data-editable="">© 2025 Wang Li Portfolio.</p>
+                <div class="flex gap-6 text-xl">
+                    <a href="#" class="hover:text-black dark:hover:text-white transition-colors"><i class="fab fa-weixin"></i></a>
+                    <a href="#" class="hover:text-black dark:hover:text-white transition-colors"><i class="fab fa-bilibili"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 管理员工具栏 -->
+    <div id="admin-toolbar" class="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 transform transition-transform duration-300 z-[100] flex justify-between items-center shadow-2xl translate-y-full">
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
+                管理员模式 (CMS)
+            </div>
+            <div class="h-6 w-px bg-slate-300 dark:bg-slate-700 mx-2"></div>
+            <p class="text-xs text-slate-500 hidden md:block">点击文字修改，点击“📷”更换图片/视频。</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="addNewProject()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-sm font-medium transition-colors">
+                <i class="fas fa-plus mr-2"></i> 新增项目
+            </button>
+            <button onclick="downloadSite()" class="px-4 py-2 rounded-lg bg-accent hover:bg-indigo-600 text-white text-sm font-medium transition-colors shadow-lg shadow-indigo-500/30">
+                <i class="fas fa-save mr-2"></i> 保存并下载
+            </button>
+        </div>
+    </div>
+
+    <!-- 隐藏的全局文件上传控件 -->
+    <input type="file" id="cms-file-input" class="hidden" accept="image/*,video/*">
+
+    <script>
+        // 1. 暗黑模式逻辑
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        if (!('theme' in localStorage)) { htmlElement.classList.add('dark'); } 
+        else if (localStorage.theme === 'dark') { htmlElement.classList.add('dark'); }
+        function updateIcon() {
+            const icon = themeToggleBtn.querySelector('i');
+            if (htmlElement.classList.contains('dark')) { icon.classList.replace('fa-moon', 'fa-sun'); } 
+            else { icon.classList.replace('fa-sun', 'fa-moon'); }
+        }
+        updateIcon();
+        themeToggleBtn.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            localStorage.theme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
+            updateIcon();
+        });
+
+        // 2. 简单的淡入观察者
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('section > div').forEach(el => {
+            el.classList.add('transition-all', 'duration-1000', 'opacity-0', 'translate-y-10');
+            observer.observe(el);
+        });
+        
+        // 3. 移动端菜单
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        });
+
+        // ==========================================
+        // 4. CMS 核心逻辑 (后台管理功能)
+        // ==========================================
+        
+        const adminToolbar = document.getElementById('admin-toolbar');
+        const portfolioGrid = document.getElementById('portfolio-grid');
+        const cmsFileInput = document.getElementById('cms-file-input');
+        
+        let currentEditingElement = null; // 当前正在更换媒体的容器元素
+
+        // 检测 ?admin=true
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === 'true') {
+            initCMS();
+        }
+
+        function initCMS() {
+            // 显示工具栏
+            adminToolbar.classList.remove('translate-y-full');
+            
+            // 开启文字编辑
+            document.querySelectorAll('[data-editable]').forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+                el.title = "点击修改内容";
+                // 防止点击文字时触发卡片链接
+                el.addEventListener('click', (e) => e.stopPropagation());
+            });
+
+            // 开启媒体编辑 (查找所有带有 .card-media-wrapper 类的元素)
+            document.querySelectorAll('.card-media-wrapper').forEach(wrapper => {
+                addMediaEditButton(wrapper);
+            });
+        }
+
+        // 为卡片添加“更换媒体”按钮
+        function addMediaEditButton(wrapper) {
+            // 如果已经有了，就不重复添加
+            if (wrapper.querySelector('.admin-media-overlay')) return;
+
+            const btn = document.createElement('div');
+            btn.className = 'admin-media-overlay';
+            btn.innerHTML = '<i class="fas fa-camera mr-1"></i> 更换媒体';
+            btn.onclick = (e) => {
+                e.stopPropagation(); // 防止触发卡片点击
+                currentEditingElement = wrapper;
+                cmsFileInput.click(); // 触发文件选择
+            };
+            wrapper.appendChild(btn);
+            wrapper.style.position = 'relative'; // 确保定位正确
+        }
+
+        // 监听文件选择变化
+        cmsFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentEditingElement) return;
+
+            const fileUrl = URL.createObjectURL(file);
+            const isVideo = file.type.startsWith('video/');
+            const fileName = file.name;
+
+            // 1. 更新预览：清空容器，重建媒体标签
+            // 注意：要保留 .admin-media-overlay 和 .glass-panel 这样的遮罩层，只替换 img/video
+            
+            // 查找旧的 img 或 video 容器（通常是第一个子元素或带有特定类的容器）
+            // 在我们的结构中，图片/视频被包在一个 div 里（relative w-full h-full... 或 video-container）
+            
+            let newHTML = '';
+            // 构建新的媒体 HTML
+            if (isVideo) {
+                newHTML = `<div class="video-container bg-slate-200 dark:bg-slate-800"><video autoplay loop muted playsinline class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" data-saved-src="assets/${fileName}"><source src="${fileUrl}" type="${file.type}"></video></div>`;
+            } else {
+                newHTML = `<div class="absolute inset-0 bg-slate-100 dark:bg-slate-800"><img src="${fileUrl}" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" data-saved-src="assets/${fileName}"></div>`;
+            }
+
+            // 找到内容区域并替换
+            // 我们的卡片结构通常是: [Media Container] + [Text Overlay] + [Admin Button]
+            // Media Container 可能是 video-container 或 absolute inset-0
+            
+            // 简单粗暴的方法：移除旧的 img/video 容器，插入新的
+            const oldImgDiv = currentEditingElement.querySelector('.absolute.inset-0.bg-slate-100, .absolute.inset-0.bg-slate-200, .video-container');
+            if (oldImgDiv) {
+                oldImgDiv.outerHTML = newHTML;
+            } else {
+                // 如果找不到标准结构，尝试直接找 img
+                const oldImg = currentEditingElement.querySelector('img');
+                 if (oldImg) {
+                     oldImg.parentElement.outerHTML = newHTML;
+                 }
+            }
+            
+            // 重置 input
+            cmsFileInput.value = '';
+            
+            // 提示用户
+            alert(`预览已更新！\n\n注意：下载 HTML 后，请务必将文件 "${fileName}" 放入您项目文件夹中的 "assets" 文件夹里，否则网页无法显示。`);
+        });
+
+        // 新增项目功能
+        function addNewProject() {
+            const title = prompt("请输入项目标题:", "新项目");
+            if (!title) return;
+            const desc = prompt("请输入项目描述:", "这是一个很棒的项目...");
+            const type = prompt("项目类型 (如: Web / Mobile):", "Design");
+            
+            // 这里我们直接创建一个带 placeholder 的卡片，然后用户可以用“更换媒体”按钮来上传
+            
+            const newCard = document.createElement('article');
+            newCard.className = 'group relative rounded-3xl overflow-hidden bento-card glass-panel cursor-pointer card-media-wrapper';
+            
+            // 默认占位图
+            const placeholderHTML = `<div class="absolute inset-0 bg-slate-100 dark:bg-slate-800"><img src="https://placehold.co/600x400/333/FFF?text=Upload+Image" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700"></div>`;
+
+            newCard.innerHTML = `
+                ${placeholderHTML}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-8 flex flex-col justify-end text-white pointer-events-none">
+                     <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                        <div class="flex items-center gap-2 mb-2 text-accent text-sm font-mono opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                            <span data-editable="true" contenteditable="true">${type}</span>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold mb-1" data-editable="true" contenteditable="true">${title}</h3>
+                        <p class="text-slate-300 text-sm" data-editable="true" contenteditable="true">${desc}</p>
+                    </div>
+                </div>
+            `;
+            
+            // 插入到开头
+            portfolioGrid.insertBefore(newCard, portfolioGrid.firstChild);
+            
+            // 立即为新卡片添加编辑按钮
+            addMediaEditButton(newCard);
+        }
+
+        // 保存并下载功能
+        function downloadSite() {
+            // 1. 克隆当前文档
+            const clone = document.documentElement.cloneNode(true);
+            
+            // 2. 清理 CMS 相关的属性和元素
+            clone.querySelectorAll('[contenteditable]').forEach(el => {
+                el.removeAttribute('contenteditable');
+                el.removeAttribute('title');
+            });
+            
+            // 移除所有管理员按钮
+            clone.querySelectorAll('.admin-media-overlay').forEach(el => el.remove());
+            // 移除工具栏
+            const toolbar = clone.querySelector('#admin-toolbar');
+            if(toolbar) toolbar.classList.add('translate-y-full'); // 或者直接 remove()
+
+            // 3. 关键步骤：处理刚才上传的本地 Blob URL
+            // 我们在上传时给 img/video 加了 data-saved-src="assets/filename.jpg"
+            // 现在要把 src 替换成这个路径
+            clone.querySelectorAll('[data-saved-src]').forEach(el => {
+                el.src = el.getAttribute('data-saved-src');
+                if (el.tagName.toLowerCase() === 'video') {
+                     // 视频还需要处理 source 标签
+                     const source = el.querySelector('source');
+                     if(source) source.src = el.getAttribute('data-saved-src');
+                }
+                el.removeAttribute('data-saved-src');
+            });
+
+            // 4. 生成 HTML
+            const htmlContent = "<!DOCTYPE html>\n" + clone.outerHTML;
+
+            // 5. 下载
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert("✅ 网站文件已生成！\n\n请记得将刚才预览的图片/视频文件放入 'assets' 文件夹中，然后上传 index.html 和 assets 文件夹到服务器。");
+        }
+    </script>
+
+</body></html>
